@@ -1,33 +1,14 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { getWorkspaceForUser } from '@/lib/workspace'
 import { Sidebar } from './sidebar'
 
 export async function PlatformLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
-  const admin = createAdminClient()
-  const { data: memberData } = await admin
-    .from('workspace_members')
-    .select('workspace_id')
-    .eq('user_id', user.id)
-    .single()
-
-  let workspaceName = 'My Workspace'
-  if (memberData?.workspace_id) {
-    const { data: ws } = await admin
-      .from('workspaces')
-      .select('name')
-      .eq('id', memberData.workspace_id)
-      .single()
-    if (ws?.name) workspaceName = ws.name
-  }
+  const data = await getWorkspaceForUser()
+  if (!data) redirect('/login')
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <Sidebar workspaceName={workspaceName} userEmail={user.email ?? ''} />
+      <Sidebar workspaceName={data.workspace.name} userEmail={data.user.email ?? ''} />
       <main className="flex-1 min-w-0 overflow-auto">
         {children}
       </main>

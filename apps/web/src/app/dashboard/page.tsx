@@ -2,8 +2,8 @@ export const dynamic = 'force-dynamic'
 
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getWorkspaceForUser } from '@/lib/workspace'
 import { Database, Mail, ClipboardList, FileText } from 'lucide-react'
 
 const QUICK_APPS = [
@@ -42,19 +42,18 @@ function getActivityLabel(appName: string, input: Record<string, unknown>): stri
 }
 
 export default async function DashboardPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  const context = await getWorkspaceForUser()
+  if (!context) redirect('/login')
 
+  const { user, workspace } = context
   const admin = createAdminClient()
-  const workspaceId = await getWorkspaceId(admin, user.id)
+  const workspaceId = workspace.id
 
   const [
     { count: docCount },
     { count: sessionCount },
     { data: recentSessions },
     { data: usageData },
-    { data: member },
   ] = await Promise.all([
     admin.from('documents').select('*', { count: 'exact', head: true }).eq('workspace_id', workspaceId),
     admin.from('app_sessions').select('*', { count: 'exact', head: true }).eq('workspace_id', workspaceId),
@@ -67,15 +66,9 @@ export default async function DashboardPage() {
     admin.from('usage_logs')
       .select('cost_usd, duration_ms')
       .eq('workspace_id', workspaceId),
-    admin.from('workspace_members').select('workspace_id').eq('user_id', user.id).single(),
   ])
 
-  let workspaceName = 'your workspace'
-  if (member?.workspace_id) {
-    const { data: ws } = await admin.from('workspaces').select('name').eq('id', member.workspace_id).single()
-    if (ws?.name) workspaceName = ws.name
-  }
-
+  const workspaceName = workspace.name
   const sessions = sessionCount ?? 0
   const totalCostUsd = (usageData ?? []).reduce((sum, r) => sum + (r.cost_usd ?? 0), 0)
   const minutesSaved = Math.round(sessions * 8)
@@ -175,7 +168,3 @@ export default async function DashboardPage() {
   )
 }
 
-async function getWorkspaceId(admin: ReturnType<typeof createAdminClient>, userId: string): Promise<string> {
-  const { data } = await admin.from('workspace_members').select('workspace_id').eq('user_id', userId).limit(1).single()
-  return data?.workspace_id ?? ''
-}

@@ -1,0 +1,24 @@
+ServiceOS.ai 使用的所有软件
+免费软件（永久免费）
+软件	             用途	费用
+Next.js	         前端框架	免费开源
+React	          UI 框架	免费开源
+Tailwind CSS	      样式	免费开源
+shadcn/ui	UI 组件库	免费开源
+TypeScript	 编程语言	免费开源
+Turborepo	 Monorepo 管理	免费开源
+pnpm	           包管理器	免费开源
+Git / GitHub	   代码版本管理	免费（私有仓库也免费）
+pdfjs-dist	   PDF 解析	免费开源
+mammoth	Word       文档解析	免费开源
+lucide-react	   图标库	免费开源
+
+有免费额度，超出才收费
+软件	        用途	                        免费额度	                        超出收费
+Supabase	数据库 + 文件存储 + 用户登录	500MB 数据库，5GB 存储	        $25/月起
+Netlify	        网站部署托管	                100GB 流量/月	                $19/月起
+GitHub	        代码仓库	无限公开仓库	        私有协作 $4/月起
+
+按用量收费（用多少付多少）
+软件	                                     用途	费用
+Anthropic Claude API	AI 回答、生成邮件/报告/工单	约 $0.003–0.015 / 1000 tokens（你充了 $5）

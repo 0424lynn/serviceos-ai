@@ -1,36 +1,19 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getWorkspaceForUser } from '@/lib/workspace'
 import { SettingsForm } from './settings-form'
 
 export default async function SettingsPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  const context = await getWorkspaceForUser()
+  if (!context) redirect('/login')
 
+  const { user, workspace } = context
   const admin = createAdminClient()
 
-  const { data: memberData } = await admin
-    .from('workspace_members')
-    .select('workspace_id, roles(name)')
-    .eq('user_id', user.id)
-    .single()
-
-  let workspace = { id: '', name: '', slug: '' }
-  if (memberData?.workspace_id) {
-    const { data: ws } = await admin
-      .from('workspaces')
-      .select('id, name, slug, settings')
-      .eq('id', memberData.workspace_id)
-      .single()
-    if (ws) workspace = ws
-  }
-
-  const { data: profile } = await admin
-    .from('users')
-    .select('name, email')
-    .eq('id', user.id)
-    .single()
+  const [{ data: memberData }, { data: profile }] = await Promise.all([
+    admin.from('workspace_members').select('roles(name)').eq('user_id', user.id).eq('workspace_id', workspace.id).single(),
+    admin.from('users').select('name, email').eq('id', user.id).single(),
+  ])
 
   const role = memberData?.roles as unknown as { name: string } | null
 
@@ -42,7 +25,7 @@ export default async function SettingsPage() {
       </div>
 
       <SettingsForm
-        workspace={workspace}
+        workspace={{ id: workspace.id, name: workspace.name, slug: workspace.slug }}
         profile={{ name: profile?.name ?? '', email: user.email ?? '' }}
         role={role?.name ?? 'member'}
       />
