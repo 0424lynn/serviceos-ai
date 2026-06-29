@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -15,16 +17,22 @@ export default async function DashboardLayout({
 
   // Fetch workspace for this user
   const admin = createAdminClient()
-  const { data: member } = await admin
+  const { data: memberData } = await admin
     .from('workspace_members')
-    .select('workspace_id, workspaces(id, name, slug)')
+    .select('workspace_id')
     .eq('user_id', user.id)
-    .order('created_at', { ascending: true })
     .limit(1)
     .single()
 
-  const ws = member?.workspaces as unknown as { name: string } | null
-  const workspaceName = ws?.name ?? 'My Workspace'
+  let workspaceName = 'My Workspace'
+  if (memberData?.workspace_id) {
+    const { data: ws } = await admin
+      .from('workspaces')
+      .select('name')
+      .eq('id', memberData.workspace_id)
+      .single()
+    if (ws?.name) workspaceName = ws.name
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">

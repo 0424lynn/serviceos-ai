@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
@@ -65,13 +67,20 @@ export default async function DashboardPage() {
       .limit(5),
     admin
       .from('workspace_members')
-      .select('workspaces(name)')
+      .select('workspace_id')
       .eq('user_id', user.id)
       .single(),
   ])
 
-  const ws = member?.workspaces as unknown as { name: string } | null
-  const workspaceName = ws?.name ?? 'your workspace'
+  let workspaceName = 'your workspace'
+  if (member?.workspace_id) {
+    const { data: ws } = await admin
+      .from('workspaces')
+      .select('name')
+      .eq('id', member.workspace_id)
+      .single()
+    if (ws?.name) workspaceName = ws.name
+  }
 
   const firstName = user.email?.split('@')[0] ?? 'there'
 
