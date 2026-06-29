@@ -20,6 +20,10 @@
   },
   "packageManager": "pnpm@11.9.0",
   "pnpm": {
-    "onlyBuiltDependencies": ["sharp"]
+    "onlyBuiltDependencies": [
+      "sharp",
+      "@img/sharp-libvips-linux-x64",
+      "@img/sharp-linux-x64"
+    ]
   }
 }
