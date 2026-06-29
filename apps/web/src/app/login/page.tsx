@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -15,7 +15,7 @@ interface FormErrors {
   general?: string
 }
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect') ?? '/dashboard'
@@ -98,11 +98,7 @@ export default function LoginPage() {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <Label htmlFor="password">Password</Label>
-              <Link
-                href="/forgot-password"
-                className="text-xs"
-                style={{ color: 'var(--brand)' }}
-              >
+              <Link href="/forgot-password" className="text-xs" style={{ color: 'var(--brand)' }}>
                 Forgot password?
               </Link>
             </div>
@@ -142,5 +138,13 @@ export default function LoginPage() {
         </form>
       </CardContent>
     </Card>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="h-96 flex items-center justify-center text-gray-400 text-sm">Loading…</div>}>
+      <LoginForm />
+    </Suspense>
   )
 }

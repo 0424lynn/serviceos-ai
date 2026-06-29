@@ -4,10 +4,6 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { parseDocument, chunkText } from '@/lib/documents/parser'
 import { generateEmbeddings } from '@/lib/ai/embeddings'
 
-export const config = {
-  api: { bodyParser: false },
-}
-
 export const maxDuration = 60
 
 const ALLOWED_TYPES: Record<string, string> = {
