@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ServiceOS.ai</title>
+  <script src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 13px; color: #1a1a1a; background: #f9f9fb; }
+
+    .header { background: #534AB7; color: white; padding: 12px 14px; display: flex; align-items: center; gap: 8px; }
+    .header img { width: 24px; height: 24px; }
+    .header-title { font-size: 14px; font-weight: 600; }
+    .header-sub { font-size: 11px; opacity: 0.8; margin-top: 1px; }
+
+    .section { background: white; border-radius: 8px; margin: 10px; padding: 12px; border: 1px solid #e8e8f0; }
+    .section-title { font-size: 10px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+
+    .field { display: flex; justify-content: space-between; align-items: flex-start; padding: 5px 0; border-bottom: 1px solid #f0f0f5; }
+    .field:last-child { border-bottom: none; }
+    .field-label { color: #888; font-size: 11px; width: 80px; flex-shrink: 0; }
+    .field-value { font-weight: 500; font-size: 12px; text-align: right; flex: 1; word-break: break-word; }
+    .field-value.green { color: #16a34a; }
+    .field-value.red { color: #dc2626; }
+    .field-value.gray { color: #aaa; }
+
+    .btn { width: 100%; padding: 9px; border-radius: 7px; border: none; cursor: pointer; font-size: 13px; font-weight: 500; transition: opacity .15s; margin-top: 6px; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: #534AB7; color: white; }
+    .btn-primary:hover:not(:disabled) { opacity: 0.9; }
+    .btn-outline { background: white; color: #534AB7; border: 1.5px solid #534AB7; }
+    .btn-outline:hover:not(:disabled) { background: #f0effe; }
+    .btn-green { background: #16a34a; color: white; }
+    .btn-green:hover:not(:disabled) { opacity: 0.9; }
+
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+    .badge-green { background: #dcfce7; color: #16a34a; }
+    .badge-red { background: #fee2e2; color: #dc2626; }
+    .badge-gray { background: #f0f0f5; color: #888; }
+
+    .loading { text-align: center; padding: 20px; color: #aaa; font-size: 12px; }
+    .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid #e0e0e0; border-top-color: #534AB7; border-radius: 50%; animation: spin .7s linear infinite; margin-bottom: 6px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .reply-box { background: #f9f9fb; border: 1px solid #e0e0e0; border-radius: 6px; padding: 10px; font-size: 12px; line-height: 1.6; color: #333; max-height: 180px; overflow-y: auto; white-space: pre-wrap; margin-top: 8px; }
+
+    .login-section { padding: 20px 14px; }
+    .login-section input { width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #ddd; font-size: 13px; margin-bottom: 8px; }
+    .error { color: #dc2626; font-size: 11px; margin-top: 4px; text-align: center; }
+
+    .tabs { display: flex; margin: 10px; gap: 4px; }
+    .tab { flex: 1; padding: 7px; border-radius: 6px; border: 1px solid #e0e0e0; background: white; font-size: 11px; font-weight: 500; cursor: pointer; text-align: center; color: #666; }
+    .tab.active { background: #534AB7; color: white; border-color: #534AB7; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <img src="/logo.png" alt="ServiceOS" />
+  <div>
+    <div class="header-title">ServiceOS.ai</div>
+    <div class="header-sub">AI Service Assistant</div>
+  </div>
+</div>
+
+<!-- Login view -->
+<div id="login-view" style="display:none">
+  <div class="login-section">
+    <p style="color:#666;font-size:12px;margin-bottom:12px;">Sign in to your ServiceOS.ai account</p>
+    <input type="email" id="login-email" placeholder="Email" />
+    <input type="password" id="login-password" placeholder="Password" style="margin-top:4px" />
+    <button class="btn btn-primary" onclick="doLogin()" style="margin-top:8px">Sign in</button>
+    <div class="error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- Main view -->
+<div id="main-view" style="display:none">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('analyze')" id="tab-analyze">Analyze</button>
+    <button class="tab" onclick="switchTab('reply')" id="tab-reply">Reply</button>
+  </div>
+
+  <!-- Analyze tab -->
+  <div id="panel-analyze">
+    <button class="btn btn-primary" style="margin: 0 10px;width:calc(100% - 20px)" onclick="analyzeEmail()" id="btn-analyze">
+      ⚡ Analyze Email
+    </button>
+
+    <div id="analyze-loading" style="display:none" class="loading">
+      <div class="spinner"></div><br>Analyzing email…
+    </div>
+
+    <div id="analyze-result" style="display:none">
+      <div class="section">
+        <div class="section-title">Extracted Info</div>
+        <div class="field"><span class="field-label">Model</span><span class="field-value" id="r-model">—</span></div>
+        <div class="field"><span class="field-label">Serial No.</span><span class="field-value" id="r-serial">—</span></div>
+        <div class="field"><span class="field-label">Problem</span><span class="field-value" id="r-problem">—</span></div>
+        <div class="field"><span class="field-label">Category</span><span class="field-value" id="r-category">—</span></div>
+        <div class="field"><span class="field-label">Next Step</span><span class="field-value" id="r-nextstep">—</span></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Technician Notes</div>
+        <div class="field-value" id="r-notes" style="font-size:12px;color:#555;line-height:1.5">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reply tab -->
+  <div id="panel-reply" style="display:none">
+    <div style="padding: 0 10px">
+      <div style="font-size:11px;color:#888;margin-bottom:6px">Reply tone</div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px">
+        <button class="tone-btn" data-tone="professional" onclick="setTone(this)" style="padding:4px 10px;border-radius:20px;border:1px solid #534AB7;background:#534AB7;color:white;font-size:11px;cursor:pointer">Professional</button>
+        <button class="tone-btn" data-tone="friendly" onclick="setTone(this)" style="padding:4px 10px;border-radius:20px;border:1px solid #ddd;background:white;color:#666;font-size:11px;cursor:pointer">Friendly</button>
+        <button class="tone-btn" data-tone="short" onclick="setTone(this)" style="padding:4px 10px;border-radius:20px;border:1px solid #ddd;background:white;color:#666;font-size:11px;cursor:pointer">Short</button>
+        <button class="tone-btn" data-tone="detailed" onclick="setTone(this)" style="padding:4px 10px;border-radius:20px;border:1px solid #ddd;background:white;color:#666;font-size:11px;cursor:pointer">Detailed</button>
+      </div>
+      <button class="btn btn-primary" onclick="generateReply()" id="btn-reply">✉ Generate Reply</button>
+
+      <div id="reply-loading" style="display:none" class="loading" style="margin-top:10px">
+        <div class="spinner"></div><br>Generating reply…
+      </div>
+
+      <div id="reply-result" style="display:none;margin-top:10px">
+        <div class="reply-box" id="reply-text"></div>
+        <button class="btn btn-green" onclick="insertReply()" style="margin-top:8px">⬆ Insert Reply</button>
+        <button class="btn btn-outline" onclick="copyReply()" style="margin-top:6px" id="btn-copy">📋 Copy</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:14px 10px 6px;border-top:1px solid #f0f0f5;margin-top:10px">
+    <button onclick="doLogout()" style="background:none;border:none;color:#aaa;font-size:11px;cursor:pointer">Sign out</button>
+  </div>
+</div>
+
+<script>
+  const BASE_URL = 'https://sage-torrone-baae84.netlify.app'
+  let accessToken = ''
+  let currentEmailBody = ''
+  let currentTone = 'professional'
+  let generatedReply = ''
+
+  Office.onReady(async () => {
+    const saved = localStorage.getItem('sos_token')
+    if (saved) {
+      accessToken = saved
+      showMain()
+    } else {
+      showLogin()
+    }
+  })
+
+  function showLogin() {
+    document.getElementById('login-view').style.display = 'block'
+    document.getElementById('main-view').style.display = 'none'
+  }
+
+  function showMain() {
+    document.getElementById('login-view').style.display = 'none'
+    document.getElementById('main-view').style.display = 'block'
+  }
+
+  async function doLogin() {
+    const email = document.getElementById('login-email').value
+    const password = document.getElementById('login-password').value
+    document.getElementById('login-error').textContent = ''
+
+    try {
+      const res = await fetch(`${BASE_URL}/api/v1/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
+      const data = await res.json()
+      if (data.success && data.data?.session?.access_token) {
+        accessToken = data.data.session.access_token
+        localStorage.setItem('sos_token', accessToken)
+        showMain()
+      } else {
+        document.getElementById('login-error').textContent = data.error?.message || 'Login failed'
+      }
+    } catch {
+      document.getElementById('login-error').textContent = 'Network error'
+    }
+  }
+
+  function doLogout() {
+    localStorage.removeItem('sos_token')
+    accessToken = ''
+    showLogin()
+  }
+
+  function switchTab(tab) {
+    document.getElementById('panel-analyze').style.display = tab === 'analyze' ? 'block' : 'none'
+    document.getElementById('panel-reply').style.display = tab === 'reply' ? 'block' : 'none'
+    document.getElementById('tab-analyze').className = 'tab' + (tab === 'analyze' ? ' active' : '')
+    document.getElementById('tab-reply').className = 'tab' + (tab === 'reply' ? ' active' : '')
+  }
+
+  function setTone(btn) {
+    document.querySelectorAll('.tone-btn').forEach(b => {
+      b.style.background = 'white'; b.style.color = '#666'; b.style.borderColor = '#ddd'
+    })
+    btn.style.background = '#534AB7'; btn.style.color = 'white'; btn.style.borderColor = '#534AB7'
+    currentTone = btn.dataset.tone
+  }
+
+  async function getEmailBody() {
+    return new Promise((resolve) => {
+      Office.context.mailbox.item.body.getAsync(Office.CoercionType.Text, (result) => {
+        resolve(result.value || '')
+      })
+    })
+  }
+
+  async function analyzeEmail() {
+    const btn = document.getElementById('btn-analyze')
+    btn.disabled = true
+    document.getElementById('analyze-loading').style.display = 'block'
+    document.getElementById('analyze-result').style.display = 'none'
+
+    currentEmailBody = await getEmailBody()
+
+    try {
+      const res = await fetch(`${BASE_URL}/api/v1/apps/ticket-assistant`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` },
+        body: JSON.stringify({ customer_description: currentEmailBody })
+      })
+      const data = await res.json()
+
+      if (data.success && data.data) {
+        const d = data.data
+        document.getElementById('r-model').textContent = d.model || '—'
+        document.getElementById('r-serial').textContent = d.serial_number || '—'
+        document.getElementById('r-problem').textContent = d.issue_summary || '—'
+        document.getElementById('r-category').textContent = d.problem_category || '—'
+        document.getElementById('r-nextstep').textContent = d.suggested_next_step || '—'
+        document.getElementById('r-notes').textContent = d.technician_notes || '—'
+        document.getElementById('analyze-result').style.display = 'block'
+      }
+    } catch {
+      alert('Analysis failed. Please try again.')
+    }
+
+    document.getElementById('analyze-loading').style.display = 'none'
+    btn.disabled = false
+  }
+
+  async function generateReply() {
+    const btn = document.getElementById('btn-reply')
+    btn.disabled = true
+    document.getElementById('reply-loading').style.display = 'block'
+    document.getElementById('reply-result').style.display = 'none'
+
+    if (!currentEmailBody) {
+      currentEmailBody = await getEmailBody()
+    }
+
+    try {
+      const res = await fetch(`${BASE_URL}/api/v1/apps/email-assistant`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` },
+        body: JSON.stringify({ original_email: currentEmailBody, tone: currentTone })
+      })
+      const data = await res.json()
+
+      if (data.success && data.data?.reply) {
+        generatedReply = data.data.reply
+        document.getElementById('reply-text').textContent = generatedReply
+        document.getElementById('reply-result').style.display = 'block'
+      }
+    } catch {
+      alert('Failed to generate reply.')
+    }
+
+    document.getElementById('reply-loading').style.display = 'none'
+    btn.disabled = false
+  }
+
+  function insertReply() {
+    Office.context.mailbox.item.displayReplyAllForm({
+      'htmlBody': generatedReply.replace(/\n/g, '<br>')
+    })
+  }
+
+  function copyReply() {
+    navigator.clipboard.writeText(generatedReply)
+    const btn = document.getElementById('btn-copy')
+    btn.textContent = '✓ Copied!'
+    setTimeout(() => btn.textContent = '📋 Copy', 2000)
+  }
+</script>
+</body>
+</html>
