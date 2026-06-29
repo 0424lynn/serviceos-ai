@@ -12,12 +12,12 @@
   <DisplayName DefaultValue="ServiceOS.ai"/>
   <Description DefaultValue="AI-powered email analysis, ticket extraction and reply generation for service teams."/>
 
-  <IconUrl DefaultValue="https://sage-torrone-baae84.netlify.app/logo.png"/>
-  <HighResolutionIconUrl DefaultValue="https://sage-torrone-baae84.netlify.app/logo.png"/>
-  <SupportUrl DefaultValue="https://sage-torrone-baae84.netlify.app"/>
+  <IconUrl DefaultValue="https://service-atosa.netlify.app/logo.png"/>
+  <HighResolutionIconUrl DefaultValue="https://service-atosa.netlify.app/logo.png"/>
+  <SupportUrl DefaultValue="https://service-atosa.netlify.app"/>
 
   <AppDomains>
-    <AppDomain>sage-torrone-baae84.netlify.app</AppDomain>
+    <AppDomain>service-atosa.netlify.app</AppDomain>
   </AppDomains>
 
   <Hosts>
@@ -33,7 +33,7 @@
   <FormSettings>
     <Form xsi:type="ItemRead">
       <DesktopSettings>
-        <SourceLocation DefaultValue="https://sage-torrone-baae84.netlify.app/addin/taskpane.html"/>
+        <SourceLocation DefaultValue="https://service-atosa.netlify.app/addin/taskpane.html"/>
         <RequestedHeight>450</RequestedHeight>
       </DesktopSettings>
     </Form>
@@ -87,13 +87,13 @@
 
     <Resources>
       <bt:Images>
-        <bt:Image id="Icon.16x16" DefaultValue="https://sage-torrone-baae84.netlify.app/logo.png"/>
-        <bt:Image id="Icon.32x32" DefaultValue="https://sage-torrone-baae84.netlify.app/logo.png"/>
-        <bt:Image id="Icon.80x80" DefaultValue="https://sage-torrone-baae84.netlify.app/logo.png"/>
+        <bt:Image id="Icon.16x16" DefaultValue="https://service-atosa.netlify.app/logo.png"/>
+        <bt:Image id="Icon.32x32" DefaultValue="https://service-atosa.netlify.app/logo.png"/>
+        <bt:Image id="Icon.80x80" DefaultValue="https://service-atosa.netlify.app/logo.png"/>
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="Commands.Url" DefaultValue="https://sage-torrone-baae84.netlify.app/addin/taskpane.html"/>
-        <bt:Url id="Taskpane.Url" DefaultValue="https://sage-torrone-baae84.netlify.app/addin/taskpane.html"/>
+        <bt:Url id="Commands.Url" DefaultValue="https://service-atosa.netlify.app/addin/taskpane.html"/>
+        <bt:Url id="Taskpane.Url" DefaultValue="https://service-atosa.netlify.app/addin/taskpane.html"/>
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="GroupLabel" DefaultValue="ServiceOS.ai"/>
