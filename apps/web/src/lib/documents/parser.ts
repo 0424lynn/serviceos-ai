@@ -12,10 +12,7 @@ export async function parseDocument(
   const type = fileType.toLowerCase()
 
   if (type === 'pdf') {
-    const pdfModule = await import('pdf-parse')
-    const pdfParse = pdfModule as unknown as (buf: Buffer) => Promise<{ text: string; numpages: number }>
-    const result = await pdfParse(buffer)
-    return { text: result.text, pageCount: result.numpages }
+    return await parsePdf(buffer)
   }
 
   if (type === 'docx' || type === 'doc') {
@@ -28,6 +25,25 @@ export async function parseDocument(
   }
 
   throw new Error(`Unsupported file type: ${fileType}`)
+}
+
+async function parsePdf(buffer: Buffer): Promise<ParsedDocument> {
+  const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs')
+  const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buffer) })
+  const pdf = await loadingTask.promise
+  const pageCount = pdf.numPages
+  const textParts: string[] = []
+
+  for (let i = 1; i <= pageCount; i++) {
+    const page = await pdf.getPage(i)
+    const content = await page.getTextContent()
+    const pageText = content.items
+      .map((item) => ('str' in item ? item.str : ''))
+      .join(' ')
+    textParts.push(pageText)
+  }
+
+  return { text: textParts.join('\n'), pageCount }
 }
 
 // Split text into overlapping chunks for better RAG retrieval

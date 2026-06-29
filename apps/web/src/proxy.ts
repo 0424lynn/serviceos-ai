@@ -35,7 +35,10 @@ export async function proxy(request: NextRequest) {
   const isPublic = PUBLIC_PATHS.some((p) => path === p || path.startsWith('/auth/'))
   const isApi = path.startsWith('/api/')
 
-  if (!user && !isPublic && !isApi) {
+  // Skip auth check for API routes — they handle auth themselves
+  if (isApi) return NextResponse.next()
+
+  if (!user && !isPublic) {
     const loginUrl = request.nextUrl.clone()
     loginUrl.pathname = '/login'
     loginUrl.searchParams.set('redirect', path)
@@ -43,9 +46,7 @@ export async function proxy(request: NextRequest) {
   }
 
   if (user && (path === '/login' || path === '/register')) {
-    const dashboardUrl = request.nextUrl.clone()
-    dashboardUrl.pathname = '/dashboard'
-    return NextResponse.redirect(dashboardUrl)
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   return supabaseResponse

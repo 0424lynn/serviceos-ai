@@ -4,6 +4,12 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { parseDocument, chunkText } from '@/lib/documents/parser'
 import { generateEmbeddings } from '@/lib/ai/embeddings'
 
+export const config = {
+  api: { bodyParser: false },
+}
+
+export const maxDuration = 60
+
 const ALLOWED_TYPES: Record<string, string> = {
   'application/pdf': 'pdf',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
@@ -11,7 +17,7 @@ const ALLOWED_TYPES: Record<string, string> = {
   'text/plain': 'txt',
 }
 
-const MAX_SIZE_BYTES = 20 * 1024 * 1024 // 20 MB
+const MAX_SIZE_BYTES = 70 * 1024 * 1024 // 70 MB
 
 export async function POST(request: Request) {
   try {
