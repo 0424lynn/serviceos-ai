@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
@@ -43,13 +44,8 @@ export function Sidebar({ workspaceName, userEmail }: SidebarProps) {
   return (
     <aside className="flex flex-col w-56 min-h-screen bg-white border-r border-gray-100 flex-shrink-0">
       {/* Logo */}
-      <div className="flex items-center gap-2.5 px-4 py-4 border-b border-gray-100">
-        <div
-          className="w-7 h-7 rounded-md flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-          style={{ background: '#534AB7' }}
-        >
-          S
-        </div>
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
+        <Image src="/logo.png" alt="ServiceOS.ai" width={28} height={28} className="flex-shrink-0" />
         <span className="text-sm font-semibold text-gray-900 truncate">ServiceOS.ai</span>
       </div>
 
