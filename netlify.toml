@@ -1,0 +1,9 @@
+[build]
+  command = "pnpm install --no-optional && turbo run build --filter @serviceos/web"
+  publish = "apps/web/.next"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
