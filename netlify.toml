@@ -1,5 +1,5 @@
 [build]
-  command = "pnpm install --no-optional && turbo run build --filter @serviceos/web"
+  command = "turbo run build --filter @serviceos/web"
   publish = "apps/web/.next"
 
 [build.environment]

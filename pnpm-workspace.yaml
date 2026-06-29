@@ -2,5 +2,7 @@ packages:
   - "apps/*"
   - "packages/*"
 
-allowBuilds:
+onlyBuiltDependencies:
   - sharp
+  - "@img/sharp-libvips-linux-x64"
+  - "@img/sharp-linux-x64"
