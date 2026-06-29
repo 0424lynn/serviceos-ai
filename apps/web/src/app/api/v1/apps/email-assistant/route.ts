@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getAuthUser, CORS_HEADERS } from '@/lib/auth'
 
-const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type, Authorization' }
-export async function OPTIONS() { return new Response(null, { status: 204, headers: { ...CORS, 'Access-Control-Allow-Methods': 'POST, OPTIONS' } }) }
+export async function OPTIONS() { return new Response(null, { status: 204, headers: CORS_HEADERS }) }
 
 const MOCK_REPLIES: Record<string, string> = {
   professional: `Dear Customer,
@@ -53,10 +52,9 @@ Senior Customer Support Team`,
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await getAuthUser(request)
     if (!user) {
-      return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 })
+      return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401, headers: CORS_HEADERS })
     }
 
     const body = await request.json() as {
@@ -67,7 +65,7 @@ export async function POST(request: Request) {
     const { original_email, tone = 'professional' } = body
 
     if (!original_email?.trim()) {
-      return NextResponse.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Email content is required' } }, { status: 422 })
+      return NextResponse.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Email content is required' } }, { status: 422, headers: CORS_HEADERS })
     }
 
     const admin = createAdminClient()
@@ -170,16 +168,12 @@ ${original_email}`
 
     return NextResponse.json({
       success: true,
-      data: {
-        reply,
-        tone_used: tone,
-        mock: !apiKey,
-      },
+      data: { reply, tone_used: tone, mock: !apiKey },
       error: null,
       meta: { request_id: crypto.randomUUID(), timestamp: new Date().toISOString() },
-    })
+    }, { headers: CORS_HEADERS })
   } catch (err) {
     console.error('[email-assistant]', err)
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL_ERROR', message: 'Something went wrong' } }, { status: 500 })
+    return NextResponse.json({ success: false, error: { code: 'INTERNAL_ERROR', message: 'Something went wrong' } }, { status: 500, headers: CORS_HEADERS })
   }
 }

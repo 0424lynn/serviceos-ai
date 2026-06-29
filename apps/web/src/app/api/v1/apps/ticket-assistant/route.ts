@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getAuthUser, CORS_HEADERS } from '@/lib/auth'
 
-const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type, Authorization' }
-export async function OPTIONS() { return new Response(null, { status: 204, headers: { ...CORS, 'Access-Control-Allow-Methods': 'POST, OPTIONS' } }) }
+export async function OPTIONS() { return new Response(null, { status: 204, headers: CORS_HEADERS }) }
 
 const MOCK_TICKET = {
   issue_summary: 'Unit not cooling — possible refrigerant leak or compressor fault',
@@ -17,18 +16,17 @@ const MOCK_TICKET = {
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401 })
+    const user = await getAuthUser(request)
+    if (!user) return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Not authenticated' } }, { status: 401, headers: CORS_HEADERS })
 
     const body = await request.json() as { customer_description: string }
     if (!body.customer_description?.trim()) {
-      return NextResponse.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Description is required' } }, { status: 422 })
+      return NextResponse.json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Description is required' } }, { status: 422, headers: CORS_HEADERS })
     }
 
     const admin = createAdminClient()
     const { data: memberData } = await admin.from('workspace_members').select('workspace_id').eq('user_id', user.id).single()
-    if (!memberData?.workspace_id) return NextResponse.json({ success: false, error: { code: 'NOT_FOUND', message: 'Workspace not found' } }, { status: 404 })
+    if (!memberData?.workspace_id) return NextResponse.json({ success: false, error: { code: 'NOT_FOUND', message: 'Workspace not found' } }, { status: 404, headers: CORS_HEADERS })
 
     const { data: app } = await admin.from('apps').select('id').eq('slug', 'ticket-assistant').single()
 
@@ -83,9 +81,9 @@ ${body.customer_description}`
       })
     }
 
-    return NextResponse.json({ success: true, data: { ...output, mock: !apiKey }, error: null, meta: { request_id: crypto.randomUUID(), timestamp: new Date().toISOString() } })
+    return NextResponse.json({ success: true, data: { ...output, mock: !apiKey }, error: null, meta: { request_id: crypto.randomUUID(), timestamp: new Date().toISOString() } }, { headers: CORS_HEADERS })
   } catch (err) {
     console.error('[ticket-assistant]', err)
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL_ERROR', message: 'Something went wrong' } }, { status: 500 })
+    return NextResponse.json({ success: false, error: { code: 'INTERNAL_ERROR', message: 'Something went wrong' } }, { status: 500, headers: CORS_HEADERS })
   }
 }
