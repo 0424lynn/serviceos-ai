@@ -1,0 +1,205 @@
+#serviceos-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 300px;
+  height: 100vh;
+  background: #f9f9fb;
+  border-left: 1px solid #e0e0e8;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 13px;
+  box-shadow: -2px 0 12px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease;
+}
+
+#serviceos-panel.hidden {
+  transform: translateX(310px);
+}
+
+#serviceos-toggle {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #534AB7;
+  color: white;
+  border: none;
+  border-radius: 8px 0 0 8px;
+  padding: 12px 6px;
+  cursor: pointer;
+  z-index: 10000;
+  writing-mode: vertical-rl;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  transition: right 0.2s ease;
+}
+
+#serviceos-toggle.panel-open {
+  right: 300px;
+}
+
+.sos-header {
+  background: #534AB7;
+  color: white;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.sos-header-logo {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+}
+
+.sos-header-title { font-size: 14px; font-weight: 600; }
+.sos-header-sub { font-size: 10px; opacity: 0.8; }
+
+.sos-body { flex: 1; overflow-y: auto; padding: 10px; }
+
+.sos-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.sos-tab {
+  flex: 1;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  background: white;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  color: #666;
+}
+
+.sos-tab.active {
+  background: #534AB7;
+  color: white;
+  border-color: #534AB7;
+}
+
+.sos-card {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e8e8f0;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+
+.sos-card-title {
+  font-size: 10px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: 8px;
+}
+
+.sos-field {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  border-bottom: 1px solid #f0f0f5;
+  gap: 8px;
+}
+
+.sos-field:last-child { border-bottom: none; }
+.sos-field-label { color: #999; font-size: 11px; flex-shrink: 0; width: 70px; }
+.sos-field-value { font-weight: 500; font-size: 12px; text-align: right; word-break: break-word; }
+
+.sos-btn {
+  width: 100%;
+  padding: 8px;
+  border-radius: 7px;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.sos-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.sos-btn-primary { background: #534AB7; color: white; }
+.sos-btn-outline { background: white; color: #534AB7; border: 1.5px solid #534AB7; }
+.sos-btn-green { background: #16a34a; color: white; }
+
+.sos-loading {
+  text-align: center;
+  padding: 16px;
+  color: #aaa;
+  font-size: 12px;
+}
+
+.sos-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e0e0e0;
+  border-top-color: #534AB7;
+  border-radius: 50%;
+  animation: sos-spin 0.7s linear infinite;
+  margin-bottom: 6px;
+}
+
+@keyframes sos-spin { to { transform: rotate(360deg); } }
+
+.sos-reply-box {
+  background: #f9f9fb;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #333;
+  max-height: 160px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  margin-bottom: 6px;
+}
+
+.sos-tone-row {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.sos-tone {
+  padding: 3px 8px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  background: white;
+  color: #666;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.sos-tone.active {
+  background: #534AB7;
+  color: white;
+  border-color: #534AB7;
+}
+
+.sos-login input {
+  width: 100%;
+  padding: 7px 9px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-bottom: 6px;
+  box-sizing: border-box;
+}
+
+.sos-error { color: #dc2626; font-size: 11px; text-align: center; margin-top: 4px; }
+.sos-footer { padding: 8px; border-top: 1px solid #f0f0f5; text-align: center; flex-shrink: 0; }
+.sos-signout { background: none; border: none; color: #aaa; font-size: 11px; cursor: pointer; }
