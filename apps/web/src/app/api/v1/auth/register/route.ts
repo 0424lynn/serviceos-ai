@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 function slugify(text: string): string {
   return text
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const supabase = await createClient()
+    const supabase = createAdminClient()
 
     // 1. Upsert the user profile row (Supabase trigger doesn't auto-create it)
     const { error: userError } = await supabase

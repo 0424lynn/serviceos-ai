@@ -1,10 +1,9 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-// Routes that are always public
 const PUBLIC_PATHS = ['/', '/login', '/register', '/auth/callback']
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -28,7 +27,6 @@ export async function middleware(request: NextRequest) {
     },
   )
 
-  // Refresh session — must call getUser() not getSession() for security
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -37,7 +35,6 @@ export async function middleware(request: NextRequest) {
   const isPublic = PUBLIC_PATHS.some((p) => path === p || path.startsWith('/auth/'))
   const isApi = path.startsWith('/api/')
 
-  // Protect all non-public, non-API routes
   if (!user && !isPublic && !isApi) {
     const loginUrl = request.nextUrl.clone()
     loginUrl.pathname = '/login'
@@ -45,7 +42,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  // Redirect authenticated users away from auth pages
   if (user && (path === '/login' || path === '/register')) {
     const dashboardUrl = request.nextUrl.clone()
     dashboardUrl.pathname = '/dashboard'
@@ -60,3 +56,6 @@ export const config = {
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
+
+// Next.js 16 requires default export alias
+export default proxy
