@@ -32,3 +32,6 @@ pnpm-debug.log*
 # Testing
 coverage
 .nyc_output
+
+# Local docs
+*.txt
