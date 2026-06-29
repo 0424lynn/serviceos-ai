@@ -1,5 +1,14 @@
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+}
+
+export async function OPTIONS() {
+  return new Response(null, { status: 204, headers: CORS_HEADERS })
+}
 
 export async function POST(request: Request) {
   try {
@@ -34,7 +43,7 @@ export async function POST(request: Request) {
       return NextResponse.json({
         success: false,
         error: { code: 'UNAUTHORIZED', message: data.error_description ?? 'Invalid login credentials' }
-      }, { status: 401 })
+      }, { status: 401, headers: CORS_HEADERS })
     }
 
     return NextResponse.json({
@@ -47,9 +56,9 @@ export async function POST(request: Request) {
       },
       error: null,
       meta: { request_id: crypto.randomUUID(), timestamp: new Date().toISOString() },
-    })
+    }, { headers: CORS_HEADERS })
   } catch (err) {
     console.error('[login]', err)
-    return NextResponse.json({ success: false, error: { code: 'INTERNAL_ERROR', message: 'Something went wrong' } }, { status: 500 })
+    return NextResponse.json({ success: false, error: { code: 'INTERNAL_ERROR', message: 'Something went wrong' } }, { status: 500, headers: CORS_HEADERS })
   }
 }
