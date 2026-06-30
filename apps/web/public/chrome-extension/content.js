@@ -189,8 +189,20 @@ function doLogout() {
   showLogin()
 }
 
+function expandGmailThread() {
+  // Click all "show trimmed content" / collapsed message buttons
+  document.querySelectorAll('.T-I.aQe, .adX, [data-tooltip="Show trimmed content"]').forEach(btn => btn.click())
+  // Expand collapsed older messages in thread (the toggle button)
+  document.querySelectorAll('.adn.ads').forEach(el => {
+    const toggle = el.querySelector('.zA')
+    if (toggle) toggle.click()
+  })
+}
+
 function getEmailBody() {
-  // Collect ALL expanded messages in the Gmail thread
+  // Auto-expand collapsed messages before reading
+  expandGmailThread()
+
   const parts = []
   const messages = document.querySelectorAll('.a3s.aiL')
   messages.forEach((el, i) => {
