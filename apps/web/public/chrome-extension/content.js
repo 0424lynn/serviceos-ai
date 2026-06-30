@@ -1,7 +1,42 @@
 const BASE_URL = 'https://service-atosa.netlify.app'
 let accessToken = ''
+let refreshToken = ''
 let currentTone = 'professional'
 let generatedReply = ''
+
+async function refreshAccessToken() {
+  if (!refreshToken) return false
+  try {
+    const url = 'https://xdkusnxvqyilofcmqntr.supabase.co'
+    const res = await fetch(`${url}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhka3Vzbnh2cXlpbG9mY21xbnRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyMjE0ODIsImV4cCI6MjA2Mzc5NzQ4Mn0.NxLNpasKC8lNGdJB5W33oKHhzDFGTXBEFbdOVGVwfqM' },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    })
+    const data = await res.json()
+    if (data.access_token) {
+      accessToken = data.access_token
+      refreshToken = data.refresh_token || refreshToken
+      chrome.storage.local.set({ sos_token: accessToken, sos_refresh: refreshToken })
+      return true
+    }
+  } catch(e) {}
+  return false
+}
+
+async function apiFetch(url, options) {
+  let res = await fetch(url, { ...options, headers: { ...options.headers, 'Authorization': `Bearer ${accessToken}` } })
+  if (res.status === 401) {
+    const refreshed = await refreshAccessToken()
+    if (refreshed) {
+      res = await fetch(url, { ...options, headers: { ...options.headers, 'Authorization': `Bearer ${accessToken}` } })
+    } else {
+      doLogout()
+      throw new Error('Session expired. Please sign in again.')
+    }
+  }
+  return res
+}
 
 function waitForGmail(callback) {
   const check = setInterval(() => {
@@ -90,9 +125,10 @@ function createPanel() {
   document.body.appendChild(panel)
   bindEvents()
 
-  chrome.storage.local.get(['sos_token'], (result) => {
+  chrome.storage.local.get(['sos_token', 'sos_refresh'], (result) => {
     if (result.sos_token) {
       accessToken = result.sos_token
+      refreshToken = result.sos_refresh || ''
       showMain()
     } else {
       showLogin()
@@ -170,7 +206,8 @@ async function doLogin() {
     const data = await res.json()
     if (data.success && data.data?.session?.access_token) {
       accessToken = data.data.session.access_token
-      chrome.storage.local.set({ sos_token: accessToken })
+      refreshToken = data.data.session.refresh_token || ''
+      chrome.storage.local.set({ sos_token: accessToken, sos_refresh: refreshToken })
       showMain()
     } else {
       $('sos-login-error').textContent = data.error?.message || 'Login failed'
@@ -184,8 +221,9 @@ async function doLogin() {
 }
 
 function doLogout() {
-  chrome.storage.local.remove('sos_token')
+  chrome.storage.local.remove(['sos_token', 'sos_refresh'])
   accessToken = ''
+  refreshToken = ''
   showLogin()
 }
 
@@ -228,9 +266,9 @@ async function doAnalyze() {
   $('sos-analyze-loading').style.display = 'block'
   $('sos-analyze-result').style.display = 'none'
   try {
-    const res = await fetch(`${BASE_URL}/api/v1/apps/ticket-assistant`, {
+    const res = await apiFetch(`${BASE_URL}/api/v1/apps/ticket-assistant`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ customer_description: body })
     })
     const data = await res.json()
@@ -256,9 +294,9 @@ async function doReply() {
   $('sos-reply-loading').style.display = 'block'
   $('sos-reply-result').style.display = 'none'
   try {
-    const res = await fetch(`${BASE_URL}/api/v1/apps/email-assistant`, {
+    const res = await apiFetch(`${BASE_URL}/api/v1/apps/email-assistant`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ original_email: body, tone: currentTone })
     })
     const data = await res.json()
