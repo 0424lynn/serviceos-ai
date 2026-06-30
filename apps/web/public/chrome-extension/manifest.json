@@ -6,12 +6,25 @@
   "permissions": ["storage", "activeTab"],
   "host_permissions": [
     "https://mail.google.com/*",
+    "https://outlook.cloud.microsoft/*",
+    "https://outlook.office.com/*",
+    "https://outlook.office365.com/*",
     "https://service-atosa.netlify.app/*"
   ],
   "content_scripts": [
     {
       "matches": ["https://mail.google.com/*"],
       "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://outlook.cloud.microsoft/*",
+        "https://outlook.office.com/*",
+        "https://outlook.office365.com/*"
+      ],
+      "js": ["content-outlook.js"],
       "css": ["styles.css"],
       "run_at": "document_idle"
     }
