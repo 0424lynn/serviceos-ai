@@ -98,7 +98,14 @@ export async function POST(request: Request) {
 
     if (apiKey) {
       // Real Anthropic API call
-      const prompt = `You are a professional customer service representative.
+      const isThread = original_email.includes('--- Previous message ---')
+      const prompt = isThread
+        ? `You are a professional customer service representative.
+The following is an email thread. The FIRST section is the latest message you need to reply to. Sections labeled "--- Previous message ---" are older messages for context only.
+Write a ${tone} reply to the latest message only. Do not include a subject line. Only write the email body.
+Email thread:
+${original_email}`
+        : `You are a professional customer service representative.
 Write a ${tone} email reply to the following customer email.
 Do not include a subject line. Only write the email body.
 Customer email:

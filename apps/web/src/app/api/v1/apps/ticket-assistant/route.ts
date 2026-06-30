@@ -36,9 +36,10 @@ export async function POST(request: Request) {
 
     const apiKey = process.env.ANTHROPIC_API_KEY
     if (apiKey) {
-      const prompt = `Extract structured ticket information from this customer description.
+      const isThread = body.customer_description.includes('--- Previous message ---')
+      const prompt = `Extract structured ticket information from the following${isThread ? ' email thread. Use the full thread for context but focus on the latest issue described' : ' customer description'}.
 Return ONLY a valid JSON object with these exact fields:
-- issue_summary: one sentence summary
+- issue_summary: one sentence summary of the latest issue
 - model: equipment model number (or "Not specified")
 - serial_number: serial number (or "Not specified")
 - problem_category: category like "Electrical", "Mechanical", "Software", etc.
@@ -46,7 +47,7 @@ Return ONLY a valid JSON object with these exact fields:
 - required_photos: array of 2-3 photo descriptions needed
 - technician_notes: brief technical notes for the technician
 
-Customer description:
+${isThread ? 'Email thread' : 'Customer description'}:
 ${body.customer_description}`
 
       const res = await fetch('https://api.anthropic.com/v1/messages', {
