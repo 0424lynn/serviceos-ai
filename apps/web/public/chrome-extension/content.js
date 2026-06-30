@@ -190,8 +190,19 @@ function doLogout() {
 }
 
 function getEmailBody() {
-  const selectors = ['.a3s.aiL', '.ii.gt .a3s', '[data-message-id] .a3s', '.gs .ii.gt div[dir]']
-  for (const sel of selectors) {
+  // Collect ALL expanded messages in the Gmail thread
+  const parts = []
+  const messages = document.querySelectorAll('.a3s.aiL')
+  messages.forEach((el, i) => {
+    const text = el.innerText?.trim()
+    if (text && text.length > 10) {
+      parts.push(i === 0 ? text : `--- Previous message ---\n${text}`)
+    }
+  })
+  if (parts.length > 0) return parts.join('\n\n')
+
+  // Fallback
+  for (const sel of ['.ii.gt .a3s', '[data-message-id] .a3s', '.gs .ii.gt div[dir]']) {
     const el = document.querySelector(sel)
     if (el && el.innerText.trim().length > 10) return el.innerText.trim()
   }

@@ -19,23 +19,31 @@ function waitForOutlook(callback) {
 }
 
 function getEmailBody() {
-  // Try reading pane selectors (Outlook Web / cloud.microsoft)
-  const selectors = [
+  // Collect ALL message blocks in Outlook thread (newest first, then history below)
+  const parts = []
+
+  // Outlook Web conversation view — each message block
+  const threadSelectors = [
     '[aria-label="Message body"]',
     '.allowTextSelection',
     '[data-testid="message-body"]',
-    '.rps_0fa1',   // OWA reading pane class (may vary)
     '.ReadingPaneContent',
     '[role="document"]',
   ]
-  for (const sel of selectors) {
+
+  for (const sel of threadSelectors) {
     const els = document.querySelectorAll(sel)
-    for (const el of els) {
+    if (els.length === 0) continue
+    els.forEach((el, i) => {
       const text = el.innerText?.trim()
-      if (text && text.length > 20) return text
-    }
+      if (text && text.length > 20) {
+        parts.push(i === 0 ? text : `--- Previous message ---\n${text}`)
+      }
+    })
+    if (parts.length > 0) break
   }
-  return ''
+
+  return parts.join('\n\n')
 }
 
 function createPanel() {
