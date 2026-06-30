@@ -9,7 +9,7 @@
     "https://outlook.cloud.microsoft/*",
     "https://outlook.office.com/*",
     "https://outlook.office365.com/*",
-    "https://service-atosa.netlify.app/*"
+    "https://serviceos-ai.onrender.com/*"
   ],
   "content_scripts": [
     {

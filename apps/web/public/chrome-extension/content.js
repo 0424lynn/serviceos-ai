@@ -1,4 +1,4 @@
-const BASE_URL = 'https://service-atosa.netlify.app'
+const BASE_URL = 'https://serviceos-ai.onrender.com'
 let accessToken = ''
 let refreshToken = ''
 let currentTone = 'professional'
