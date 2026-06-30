@@ -7,16 +7,15 @@ let generatedReply = ''
 async function refreshAccessToken() {
   if (!refreshToken) return false
   try {
-    const url = 'https://xdkusnxvqyilofcmqntr.supabase.co'
-    const res = await fetch(`${url}/auth/v1/token?grant_type=refresh_token`, {
+    const res = await fetch(`${BASE_URL}/api/v1/auth/refresh`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhka3Vzbnh2cXlpbG9mY21xbnRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyMjE0ODIsImV4cCI6MjA2Mzc5NzQ4Mn0.NxLNpasKC8lNGdJB5W33oKHhzDFGTXBEFbdOVGVwfqM' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refresh_token: refreshToken }),
     })
     const data = await res.json()
-    if (data.access_token) {
-      accessToken = data.access_token
-      refreshToken = data.refresh_token || refreshToken
+    if (data.success && data.data?.session?.access_token) {
+      accessToken = data.data.session.access_token
+      refreshToken = data.data.session.refresh_token || refreshToken
       chrome.storage.local.set({ sos_token: accessToken, sos_refresh: refreshToken })
       return true
     }
@@ -287,10 +286,11 @@ async function doReply() {
   $('sos-reply-loading').style.display = 'block'
   $('sos-reply-result').style.display = 'none'
   try {
+    const trimmed = body.length > 8000 ? body.slice(0, 8000) + '\n[...trimmed]' : body
     const res = await apiFetch(`${BASE_URL}/api/v1/apps/email-assistant`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ original_email: body, tone: currentTone })
+      body: JSON.stringify({ original_email: trimmed, tone: currentTone })
     })
     const data = await res.json()
     if (data.success && data.data?.reply) {
